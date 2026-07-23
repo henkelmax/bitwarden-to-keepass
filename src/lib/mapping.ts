@@ -30,8 +30,8 @@ export interface MappedEntry {
   attachments: MappedAttachment[];
 }
 
-/** Looks up decrypted attachment bytes by item id and file name. */
-export type AttachmentLookup = (itemId: string, fileName: string) => Uint8Array | undefined;
+/** Returns all decrypted attachment files belonging to an item. */
+export type AttachmentLookup = (itemId: string) => MappedAttachment[];
 
 const encoder = new TextEncoder();
 
@@ -145,12 +145,8 @@ export function mapItem(item: BwItem, lookup: AttachmentLookup): MappedEntry {
     push(entry.fields, field.name, field.value, field.type === FieldType.Hidden);
   }
 
-  for (const attachment of item.attachments ?? []) {
-    if (!attachment.fileName) continue;
-    const data = lookup(item.id, attachment.fileName);
-    if (data) {
-      entry.attachments.push({ name: attachment.fileName, data });
-    }
+  for (const file of lookup(item.id)) {
+    entry.attachments.push(file);
   }
 
   return entry;

@@ -11,6 +11,7 @@ const exportJson = {
   folders: [
     { id: 'work', name: 'Work' },
     { id: 'servers', name: 'Servers' },
+    { id: 'nested', name: 'Clients/Acme' },
   ],
   items: [
     {
@@ -24,7 +25,15 @@ const exportJson = {
         totp: 'JBSWY3DPEHPK3PXP',
         uris: [{ uri: 'https://github.com' }],
       },
-      attachments: [{ id: 'att-1', fileName: 'recovery-codes.txt' }],
+      // JSON name intentionally differs from the on-disk name (spaces vs hyphens).
+      attachments: [{ id: 'att-1', fileName: 'recovery codes.txt' }],
+    },
+    {
+      id: 'client-1',
+      type: ItemType.Login,
+      name: 'Acme login',
+      folderId: 'nested',
+      login: { username: 'acme', password: 'pw' },
     },
     {
       id: 'ssh-1',
@@ -93,17 +102,23 @@ describe('convert (full round-trip)', () => {
     const zip = buildZip();
     const { kdbx, summary } = await convert('vault.zip', zip, PASSWORD);
 
-    expect(summary).toMatchObject({ folders: 2, totp: 1, sshKeys: 1 });
-    expect(summary.entries).toBe(3); // deleted item skipped
+    expect(summary).toMatchObject({ folders: 3, totp: 1, sshKeys: 1 });
+    expect(summary.entries).toBe(4); // deleted item skipped
 
     const db = await loadDb(kdbx);
 
-    // Login lands in its folder, with TOTP and its attachment.
+    // Login lands in its folder, with TOTP and its attachment. The attachment is matched by
+    // folder (item id), so the on-disk name is used even though the JSON name differs.
     const github = entryByTitle(groupByName(db, 'Work'), 'GitHub');
     expect(github.fields.get('UserName')).toBe('octocat');
     expect((github.fields.get('Password') as kdbxweb.ProtectedValue).getText()).toBe('hunter2');
     expect(github.fields.get('otp')).toContain('secret=JBSWY3DPEHPK3PXP');
     expect(new TextDecoder().decode(binaryBytes(github, 'recovery-codes.txt'))).toBe('code-1\ncode-2\n');
+
+    // Nested Bitwarden folder "Clients/Acme" becomes real nested groups.
+    const acme = groupByName(db, 'Clients').groups.find((g) => g.name === 'Acme');
+    if (!acme) throw new Error('nested group Acme not found');
+    entryByTitle(acme, 'Acme login');
 
     // SSH key lands in its folder, with the private key as both field and attachment.
     const server = entryByTitle(groupByName(db, 'Servers'), 'prod-server');
@@ -127,7 +142,7 @@ describe('convert (full round-trip)', () => {
 
   it('accepts a bare .json export (no attachments)', async () => {
     const { summary } = await convert('vault.json', strToU8(JSON.stringify(exportJson)), PASSWORD);
-    expect(summary.entries).toBe(3);
+    expect(summary.entries).toBe(4);
     // Only the SSH private key; the login's file attachment is absent without the zip.
     expect(summary.attachments).toBe(1);
   });

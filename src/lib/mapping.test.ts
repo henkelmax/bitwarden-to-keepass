@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BwItem, ItemType, FieldType } from './bitwarden';
 import { mapItem, toOtpauthUri } from './mapping';
 
-const noAttachments = () => undefined;
+const noAttachments = () => [];
 
 describe('toOtpauthUri', () => {
   it('wraps a bare base32 secret', () => {
@@ -76,15 +76,14 @@ describe('mapItem', () => {
     expect(entry.fields).toContainEqual({ name: 'secret', value: 's', protected: true });
   });
 
-  it('attaches file bytes looked up by item id and file name', () => {
+  it('attaches every file found in the item folder, by item id', () => {
     const bytes = new Uint8Array([1, 2, 3]);
     const item: BwItem = {
       id: '4',
       type: ItemType.Login,
       name: 'with file',
-      attachments: [{ id: 'a', fileName: 'doc.pdf' }],
     };
-    const entry = mapItem(item, (id, name) => (id === '4' && name === 'doc.pdf' ? bytes : undefined));
+    const entry = mapItem(item, (id) => (id === '4' ? [{ name: 'doc.pdf', data: bytes }] : []));
     expect(entry.attachments).toContainEqual({ name: 'doc.pdf', data: bytes });
   });
 });

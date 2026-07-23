@@ -49,10 +49,29 @@ export async function convert(
   );
   master.binaries.set(fileName, await db.createBinary(toArrayBuffer(bytes)));
 
-  // One KeePass group per Bitwarden folder; items without a folder land in "No Folder".
+  // Bitwarden stores nested folders as a flat list with "/" in the name ("Top/Nested"),
+  // so build the matching KeePass group hierarchy, reusing shared parents.
+  const pathGroups = new Map<string, kdbxweb.KdbxGroup>();
+  const ensureGroup = (name: string): kdbxweb.KdbxGroup => {
+    const segments = name.split('/').map((s) => s.trim()).filter(Boolean);
+    if (segments.length === 0) return db.createGroup(root, '(unnamed folder)');
+    let parent = root;
+    let path = '';
+    for (const segment of segments) {
+      path = path ? `${path}/${segment}` : segment;
+      let group = pathGroups.get(path);
+      if (!group) {
+        group = db.createGroup(parent, segment);
+        pathGroups.set(path, group);
+      }
+      parent = group;
+    }
+    return parent;
+  };
+
   const groups = new Map<string | null, kdbxweb.KdbxGroup>();
   for (const folder of vault.folders ?? []) {
-    groups.set(folder.id, db.createGroup(root, folder.name || '(unnamed folder)'));
+    groups.set(folder.id, ensureGroup(folder.name ?? ''));
   }
   const noFolderGroup = (): kdbxweb.KdbxGroup => {
     let group = groups.get(null);
@@ -63,7 +82,7 @@ export async function convert(
     return group;
   };
 
-  const lookup = (itemId: string, name: string) => attachments.get(`${itemId}/${name}`);
+  const lookup = (itemId: string) => attachments.get(itemId) ?? [];
 
   const summary: ConversionSummary = {
     entries: 0,
