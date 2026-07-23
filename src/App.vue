@@ -46,7 +46,7 @@ function downloadName(): string {
   <div class="min-h-screen bg-slate-900 text-slate-100">
    <div class="mx-auto max-w-2xl px-5 py-10">
     <header>
-      <h1 class="text-2xl font-bold">Bitwarden → KeePass</h1>
+      <h1 class="text-2xl font-bold">Bitwarden -> KeePass</h1>
       <p class="mt-1 text-slate-400">
         Convert a Bitwarden/Vaultwarden export into a KeePass
         <code class="rounded bg-slate-700 px-1.5 py-0.5">.kdbx</code> database. Everything runs in
