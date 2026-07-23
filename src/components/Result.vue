@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import type { ConversionSummary } from '../lib/convert';
 
 const props = defineProps<{
@@ -12,6 +12,8 @@ const emit = defineEmits<{ reset: [] }>();
 const blob = new Blob([props.kdbx as BlobPart], { type: 'application/octet-stream' });
 const url = URL.createObjectURL(blob);
 onBeforeUnmount(() => URL.revokeObjectURL(url));
+
+const downloaded = ref(false);
 
 const rows = computed(() => [
   { label: 'Entries', value: props.summary.entries },
@@ -42,7 +44,7 @@ const rows = computed(() => [
     </p>
 
     <div class="mt-4 flex flex-wrap gap-3">
-      <a :href="url" :download="downloadName">
+      <a :href="url" :download="downloadName" @click="downloaded = true">
         <button class="rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-500">
           Download .kdbx
         </button>
@@ -54,5 +56,16 @@ const rows = computed(() => [
         Convert another
       </button>
     </div>
+
+    <p
+      v-if="downloaded"
+      class="mt-4 rounded-lg border border-red-500 bg-red-500/10 px-4 py-3 text-red-400"
+    >
+      Now delete the original <code class="rounded bg-slate-700 px-1.5 py-0.5">.zip</code>/<code
+        class="rounded bg-slate-700 px-1.5 py-0.5"
+        >.json</code
+      >
+      export - it holds your entire vault in plaintext, unencrypted.
+    </p>
   </div>
 </template>
