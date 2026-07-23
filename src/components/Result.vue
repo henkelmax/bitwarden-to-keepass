@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 import type { ConversionSummary } from '../lib/convert';
 
 const props = defineProps<{
@@ -9,10 +9,9 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ reset: [] }>();
 
-const url = computed(() => {
-  const blob = new Blob([props.kdbx as BlobPart], { type: 'application/octet-stream' });
-  return URL.createObjectURL(blob);
-});
+const blob = new Blob([props.kdbx as BlobPart], { type: 'application/octet-stream' });
+const url = URL.createObjectURL(blob);
+onBeforeUnmount(() => URL.revokeObjectURL(url));
 
 const rows = computed(() => [
   { label: 'Entries', value: props.summary.entries },
