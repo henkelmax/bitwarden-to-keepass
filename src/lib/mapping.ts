@@ -44,10 +44,10 @@ export function toOtpauthUri(totp: string, label: string): string {
   const encodedLabel = encodeURIComponent(label || 'TOTP');
   // Bitwarden stores Steam OTP as "steam://<secret>"; KeePassXC needs the encoder=steam flag.
   if (value.startsWith('steam://')) {
-    const secret = value.slice('steam://'.length).replace(/\s+/g, '');
+    const secret = value.slice('steam://'.length).replace(/\s+/g, '').toUpperCase();
     return `otpauth://totp/${encodedLabel}?secret=${secret}&encoder=steam`;
   }
-  const secret = value.replace(/\s+/g, '');
+  const secret = value.replace(/\s+/g, '').toUpperCase();
   return `otpauth://totp/${encodedLabel}?secret=${secret}`;
 }
 

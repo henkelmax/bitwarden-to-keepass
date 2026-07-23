@@ -11,6 +11,12 @@ describe('toOtpauthUri', () => {
     );
   });
 
+  it('uppercases a bare base32 secret for strict parsers', () => {
+    expect(toOtpauthUri('jbswy3dpehpk3pxp', 'GitHub')).toBe(
+      'otpauth://totp/GitHub?secret=JBSWY3DPEHPK3PXP',
+    );
+  });
+
   it('passes through an existing otpauth URI', () => {
     const uri = 'otpauth://totp/x?secret=ABC&issuer=y';
     expect(toOtpauthUri(uri, 'x')).toBe(uri);
