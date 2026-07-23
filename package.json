@@ -2,6 +2,7 @@
   "name": "bitwarden-to-keepass",
   "version": "1.0.2",
   "description": "Client-side web app that converts a Bitwarden/Vaultwarden export into a KeePass (.kdbx) database, entirely in the browser.",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=24"

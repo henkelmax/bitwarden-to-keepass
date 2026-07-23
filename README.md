@@ -42,3 +42,7 @@ npm run build    # production build into dist/
 - The master password you enter protects the output `.kdbx` only; it's unrelated to your Bitwarden
   master password and is never persisted.
 - After converting, store the `.kdbx` somewhere safe and clear the plaintext export.
+
+## License
+
+[MIT](LICENSE)
