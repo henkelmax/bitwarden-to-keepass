@@ -27,17 +27,6 @@ In the Bitwarden/Vaultwarden web vault: **Tools → Export vault → `.zip (with
 (recommended, includes attachments and SSH keys). A plain `.json` export also works but has no
 attachments. Encrypted exports are not supported (they can't be decrypted offline).
 
-## Run with Docker
-
-```bash
-docker compose up --build
-```
-
-Then open <http://localhost:8080>.
-
-> **Note:** the browser's WebCrypto API requires a secure context. Use `localhost`/`127.0.0.1`, or
-> serve the app over HTTPS if you host it on a LAN address.
-
 ## Develop
 
 ```bash
