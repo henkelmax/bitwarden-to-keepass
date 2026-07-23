@@ -38,11 +38,17 @@ const encoder = new TextEncoder();
 /** Builds an otpauth:// URI KeePassXC understands, wrapping a bare base32 secret if needed. */
 export function toOtpauthUri(totp: string, label: string): string {
   const value = totp.trim();
-  if (value.startsWith('otpauth://') || value.startsWith('steam://')) {
+  if (value.startsWith('otpauth://')) {
     return value;
   }
+  const encodedLabel = encodeURIComponent(label || 'TOTP');
+  // Bitwarden stores Steam OTP as "steam://<secret>"; KeePassXC needs the encoder=steam flag.
+  if (value.startsWith('steam://')) {
+    const secret = value.slice('steam://'.length).replace(/\s+/g, '');
+    return `otpauth://totp/${encodedLabel}?secret=${secret}&encoder=steam`;
+  }
   const secret = value.replace(/\s+/g, '');
-  return `otpauth://totp/${encodeURIComponent(label || 'TOTP')}?secret=${secret}`;
+  return `otpauth://totp/${encodedLabel}?secret=${secret}`;
 }
 
 function push(fields: MappedField[], name: string, value: unknown, isProtected = false): void {

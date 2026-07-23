@@ -15,6 +15,12 @@ describe('toOtpauthUri', () => {
     const uri = 'otpauth://totp/x?secret=ABC&issuer=y';
     expect(toOtpauthUri(uri, 'x')).toBe(uri);
   });
+
+  it('converts a Steam secret into an otpauth URI with the steam encoder', () => {
+    expect(toOtpauthUri('steam://ABC123', 'Steam')).toBe(
+      'otpauth://totp/Steam?secret=ABC123&encoder=steam',
+    );
+  });
 });
 
 describe('mapItem', () => {
