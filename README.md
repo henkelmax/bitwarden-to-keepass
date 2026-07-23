@@ -17,7 +17,7 @@ app never uploads it anywhere - parsing and `.kdbx` generation happen entirely o
   attachment so KeePassXC's SSH agent can use it.
 - **Custom fields** -> string fields (hidden ones stay protected).
 - **Attachments** -> embedded into the matching entry.
-- **Master** entry -> the complete original export, attached verbatim as a safety net.
+- **Original Bitwarden export** entry -> the complete original export, attached verbatim as a safety net.
 
 Deleted (trashed) items are skipped.
 

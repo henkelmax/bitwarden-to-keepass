@@ -38,7 +38,7 @@ const rows = computed(() => [
     </ul>
 
     <p class="text-sm text-slate-400">
-      A "Master" entry with the full original export is included as a backup.
+      An "Original Bitwarden export" entry with the full export is included as a backup.
     </p>
 
     <div class="mt-4 flex flex-wrap gap-3">

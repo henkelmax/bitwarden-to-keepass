@@ -135,8 +135,8 @@ describe('convert (full round-trip)', () => {
       .groups.flatMap((g) => g.entries.map((e) => e.fields.get('Title')));
     expect(allTitles).not.toContain('Deleted');
 
-    // Master safety-net entry holds the full original export.
-    const master = entryByTitle(db.getDefaultGroup(), 'Master');
+    // Safety-net entry holds the full original export.
+    const master = entryByTitle(db.getDefaultGroup(), 'Original Bitwarden export');
     expect(binaryBytes(master, 'vault.zip')).toEqual(zip);
   });
 

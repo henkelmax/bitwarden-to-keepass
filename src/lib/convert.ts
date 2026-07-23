@@ -50,10 +50,10 @@ export async function convert(
 
   const root = db.getDefaultGroup();
 
-  // Safety net: keep the complete original export as an attachment on a "Master" entry,
+  // Safety net: keep the complete original export as an attachment on a dedicated entry,
   // so nothing is lost even if a field or item type isn't mapped.
   const master = db.createEntry(root);
-  master.fields.set('Title', 'Master');
+  master.fields.set('Title', 'Original Bitwarden export');
   master.fields.set(
     'Notes',
     'Full original Bitwarden export, attached verbatim as a backup in case any item was not mapped.',
