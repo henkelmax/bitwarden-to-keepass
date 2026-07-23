@@ -123,8 +123,9 @@ async function addEntry(
   if (mapped.otp) entry.fields.set('otp', mapped.otp);
 
   for (const field of mapped.fields) {
+    const name = uniqueFieldName(entry, field.name);
     entry.fields.set(
-      field.name,
+      name,
       field.protected ? kdbxweb.ProtectedValue.fromString(field.value) : field.value,
     );
   }
@@ -133,6 +134,18 @@ async function addEntry(
     const binary = await db.createBinary(toArrayBuffer(attachment.data));
     entry.binaries.set(attachment.name, binary);
   }
+}
+
+/**
+ * Finds a field name that doesn't collide with one already on the entry, so custom fields
+ * can't overwrite standard fields (Title, Password, ...) or each other. KeePass field names
+ * must be unique, so colliding names get a numeric suffix ("Title", "Title 2", ...).
+ */
+function uniqueFieldName(entry: kdbxweb.KdbxEntry, name: string): string {
+  if (!entry.fields.has(name)) return name;
+  let i = 2;
+  while (entry.fields.has(`${name} ${i}`)) i++;
+  return `${name} ${i}`;
 }
 
 function toArrayBuffer(data: Uint8Array): ArrayBuffer {

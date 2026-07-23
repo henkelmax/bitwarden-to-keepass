@@ -146,4 +146,23 @@ describe('convert (full round-trip)', () => {
     // Only the SSH private key; the login's file attachment is absent without the zip.
     expect(summary.attachments).toBe(1);
   });
+
+  it("keeps the entry title when a custom field is also named 'Title'", async () => {
+    const json = {
+      encrypted: false,
+      items: [
+        {
+          id: 'id-1',
+          type: ItemType.Identity,
+          name: 'John Doe',
+          identity: { title: 'Mr', firstName: 'John' },
+        },
+      ],
+    };
+    const { kdbx } = await convert('vault.json', strToU8(JSON.stringify(json)), PASSWORD);
+    const db = await loadDb(kdbx);
+    const entry = entryByTitle(groupByName(db, 'No Folder'), 'John Doe');
+    expect(entry.fields.get('Title')).toBe('John Doe');
+    expect(entry.fields.get('Title 2')).toBe('Mr');
+  });
 });
