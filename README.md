@@ -19,7 +19,7 @@ app never uploads it anywhere - parsing and `.kdbx` generation happen entirely o
 - **Attachments** -> embedded into the matching entry.
 - **Original Bitwarden export** entry -> the complete original export, attached verbatim as a safety net.
 
-Deleted (trashed) items are skipped.
+Deleted (trashed) items are converted too, but placed in the KeePass recycle bin.
 
 ## Producing the export
 

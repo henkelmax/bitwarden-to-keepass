@@ -93,6 +93,15 @@ export async function convert(
     return group;
   };
 
+  let recycleBin: kdbxweb.KdbxGroup | undefined;
+  const recycleBinGroup = (): kdbxweb.KdbxGroup => {
+    if (!recycleBin) {
+      db.createRecycleBin();
+      recycleBin = db.getGroup(db.meta.recycleBinUuid!)!;
+    }
+    return recycleBin;
+  };
+
   const lookup = (itemId: string) => attachments.get(itemId) ?? [];
 
   const summary: ConversionSummary = {
@@ -104,9 +113,10 @@ export async function convert(
   };
 
   for (const item of vault.items ?? []) {
-    if (item.deletedDate) continue;
     const mapped = mapItem(item, lookup);
-    const group = groups.get(mapped.folderId) ?? noFolderGroup();
+    const group = item.deletedDate
+      ? recycleBinGroup()
+      : groups.get(mapped.folderId) ?? noFolderGroup();
     await addEntry(db, group, mapped);
     summary.entries++;
     summary.attachments += mapped.attachments.length;

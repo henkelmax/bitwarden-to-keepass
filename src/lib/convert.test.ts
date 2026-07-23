@@ -103,7 +103,7 @@ describe('convert (full round-trip)', () => {
     const { kdbx, summary } = await convert('vault.zip', zip, PASSWORD);
 
     expect(summary).toMatchObject({ folders: 3, totp: 1, sshKeys: 1 });
-    expect(summary.entries).toBe(4); // deleted item skipped
+    expect(summary.entries).toBe(5); // includes the deleted item, now in the recycle bin
 
     const db = await loadDb(kdbx);
 
@@ -129,11 +129,15 @@ describe('convert (full round-trip)', () => {
     // Item without a folder goes to "No Folder".
     entryByTitle(groupByName(db, 'No Folder'), 'Loose note');
 
-    // Deleted item is not present anywhere.
-    const allTitles = db
+    // Deleted item lands in the KeePass recycle bin, not in any regular folder.
+    const recycleBin = db.getGroup(db.meta.recycleBinUuid!);
+    if (!recycleBin) throw new Error('recycle bin not found');
+    entryByTitle(recycleBin, 'Deleted');
+    const folderTitles = db
       .getDefaultGroup()
-      .groups.flatMap((g) => g.entries.map((e) => e.fields.get('Title')));
-    expect(allTitles).not.toContain('Deleted');
+      .groups.filter((g) => !g.uuid.equals(db.meta.recycleBinUuid!))
+      .flatMap((g) => g.entries.map((e) => e.fields.get('Title')));
+    expect(folderTitles).not.toContain('Deleted');
 
     // Safety-net entry holds the full original export.
     const master = entryByTitle(db.getDefaultGroup(), 'Original Bitwarden export');
@@ -142,7 +146,7 @@ describe('convert (full round-trip)', () => {
 
   it('accepts a bare .json export (no attachments)', async () => {
     const { summary } = await convert('vault.json', strToU8(JSON.stringify(exportJson)), PASSWORD);
-    expect(summary.entries).toBe(4);
+    expect(summary.entries).toBe(5);
     // Only the SSH private key; the login's file attachment is absent without the zip.
     expect(summary.attachments).toBe(1);
   });
