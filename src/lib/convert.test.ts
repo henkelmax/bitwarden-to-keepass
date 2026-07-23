@@ -147,6 +147,15 @@ describe('convert (full round-trip)', () => {
     expect(summary.attachments).toBe(1);
   });
 
+  it('hardens the Argon2 KDF beyond the kdbxweb defaults', async () => {
+    const { kdbx } = await convert('vault.json', strToU8(JSON.stringify(exportJson)), PASSWORD);
+    const db = await loadDb(kdbx);
+    const kdf = db.header.kdfParameters!;
+    expect(Number(kdf.get('M')?.valueOf())).toBe(64 * 1024 * 1024);
+    expect(Number(kdf.get('I')?.valueOf())).toBe(10);
+    expect(Number(kdf.get('P')?.valueOf())).toBe(4);
+  });
+
   it("keeps the entry title when a custom field is also named 'Title'", async () => {
     const json = {
       encrypted: false,

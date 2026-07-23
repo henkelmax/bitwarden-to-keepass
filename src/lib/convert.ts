@@ -17,6 +17,12 @@ export interface ConversionResult {
   summary: ConversionSummary;
 }
 
+// kdbxweb defaults to a very weak KDF (1 MiB memory, 2 iterations). Use parameters comparable to
+// a modern KeePass client so the exported database resists brute-forcing of the master password.
+const ARGON2_MEMORY_BYTES = 64 * 1024 * 1024;
+const ARGON2_ITERATIONS = 10;
+const ARGON2_PARALLELISM = 4;
+
 let argon2Registered = false;
 
 /** Converts a Bitwarden export (zip or json) into an encrypted KeePass database. */
@@ -36,6 +42,11 @@ export async function convert(
   const credentials = new kdbxweb.Credentials(kdbxweb.ProtectedValue.fromString(masterPassword));
   const db = kdbxweb.Kdbx.create(credentials, 'Bitwarden Export');
   db.setKdf(kdbxweb.Consts.KdfId.Argon2id);
+  const { ValueType } = kdbxweb.VarDictionary;
+  const kdf = db.header.kdfParameters!;
+  kdf.set('M', ValueType.UInt64, kdbxweb.Int64.from(ARGON2_MEMORY_BYTES));
+  kdf.set('I', ValueType.UInt64, kdbxweb.Int64.from(ARGON2_ITERATIONS));
+  kdf.set('P', ValueType.UInt32, ARGON2_PARALLELISM);
 
   const root = db.getDefaultGroup();
 
